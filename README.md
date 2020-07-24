@@ -16,7 +16,7 @@ so even in if those ephemeral keys are somehow comprimised, they have already be
 * Hashicorp Vault
 
 ## Setup
-In order for this to run, you do have to have terraform and vault installed. If you have used the AWS console before, terraform will automatically use your AWS keys that are stored on your pc. However the goal here is to store those keys securely in Vault, and then use those stored keys to generate the ephemeral keypair on demand.
+In order for this to run, you do have to have terraform and vault installed. If you have used the AWS console before, terraform will automatically use your AWS keys that are stored on your pc. However the goal here is to store those keys securely in Vault, and then use those stored keys to generate the ephemeral keypair on demand. In this use case, Vault is run locally on your machine and the keys are saved in that local version of vault. 
 
 ## Contact
 Created by me! Veesergey. Feel free to contact me through my github or my [linkedIn!](http://www.linkedin.com/in/veesergey)
