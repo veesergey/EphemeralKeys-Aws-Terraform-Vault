@@ -7,8 +7,8 @@ data "vault_generic_secret" "aws_keys"{
   path = "secret/aws"
 }
 
-// Secret Engine, Issues the AWS access key and secret key.
-// The keys given used by this resource are the ones used the create the new IAM user. 
+// Secret Engine, Issues the temporary AWS access key and secret key.
+// Encrypted permanent keys are pulled from Vault and used to generate temporary keys.
 resource "vault_aws_secret_backend" "aws" {
   access_key = data.vault_generic_secret.aws_keys.data["aws_access_key"]
   secret_key = data.vault_generic_secret.aws_keys.data["aws_secret_key"]
@@ -17,7 +17,7 @@ resource "vault_aws_secret_backend" "aws" {
   max_lease_ttl_seconds     = "240"
 }
 
-// The IAM User that actually creates the EC2 instance
+// The IAM User Role that actually creates the EC2 instance
 resource "vault_aws_secret_backend_role" "EC2_Creator" {
   backend = vault_aws_secret_backend.aws.path
   name    = "EC2Creator-role"
