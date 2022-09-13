@@ -1,25 +1,25 @@
-variable "aws_access_key" {}
-variable "aws_secret_key" {}
-
 provider "vault" {
   address = "http://127.0.0.1:8200"
   add_address_to_env = "true"
 }
 
+data "vault_generic_secret" "aws_keys"{
+  path = "secret/aws"
+}
+
 // Secret Engine, Issues the AWS access key and secret key.
 // The keys given used by this resource are the ones used the create the new IAM user. 
 resource "vault_aws_secret_backend" "aws" {
-  access_key = "${var.aws_access_key}"
-  secret_key = "${var.aws_secret_key}"
-  path       = "aws-path"
-
+  access_key = data.vault_generic_secret.aws_keys.data["aws_access_key"]
+  secret_key = data.vault_generic_secret.aws_keys.data["aws_secret_key"]
+  path = "aws-path"
   default_lease_ttl_seconds = "120"
   max_lease_ttl_seconds     = "240"
 }
 
 // The IAM User that actually creates the EC2 instance
 resource "vault_aws_secret_backend_role" "EC2_Creator" {
-  backend = "${vault_aws_secret_backend.aws.path}"
+  backend = vault_aws_secret_backend.aws.path
   name    = "EC2Creator-role"
   credential_type = "iam_user"
   policy_document = <<EOF
@@ -40,13 +40,13 @@ EOF
 
 // Reads the AWS Credentials for the EC2_Creator Role
 data "vault_aws_access_credentials" "creds" {
-  backend = "${vault_aws_secret_backend.aws.path}"
-  role    = "${vault_aws_secret_backend_role.EC2_Creator.name}"
+  backend = vault_aws_secret_backend.aws.path
+  role    = vault_aws_secret_backend_role.EC2_Creator.name
 }
 
 provider "aws" {
-  access_key = "${data.vault_aws_access_credentials.creds.access_key}"
-  secret_key = "${data.vault_aws_access_credentials.creds.secret_key}"
+  access_key = data.vault_aws_access_credentials.creds.access_key
+  secret_key = data.vault_aws_access_credentials.creds.secret_key
   region     = "us-east-1"
 }
 
